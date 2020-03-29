@@ -7,6 +7,8 @@
 #include "SFollowingBot.generated.h"
 
 class USHealthComponent;
+class USphereComponent;
+class USoundCue;
 
 UCLASS()
 class BRGAME_API ASFollowingBot : public APawn
@@ -27,6 +29,9 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	USHealthComponent* HealthComponent;
 
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	USphereComponent* SphereComponent;
+
 	UFUNCTION()
 	void HandleTakeDamage(USHealthComponent* OwningHealthComponent, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
@@ -44,7 +49,40 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "FollowingBot")
 	float RequiredDistanceToTarget;
 
+	// Material to pulse on damage
+	UMaterialInstanceDynamic* MaterialInstance;
+
+	void SelfDestruct();
+
+	UPROPERTY(EditDefaultsOnly, Category = "FollowingBot")
+	UParticleSystem* ExplosionEffect;
+
+	bool bExploded;
+
+	bool bStartedSelfDestruction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "FollowingBot")
+	float ExplosionRadius;
+
+	UPROPERTY(EditDefaultsOnly, Category = "FollowingBot")
+	float ExplosionDamage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "FollowingBot")
+	float SelfDestructionInterval;
+
+	FTimerHandle TimerHandle_SelfDamage;
+
+	void DamageSelf();
+
+	UPROPERTY(EditDefaultsOnly, Category = "FollowingBot")
+	USoundCue* SelfDestructionSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "FollowingBot")
+	USoundCue* ExplosionSound;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

@@ -9,6 +9,53 @@
 class USkeletalMeshComponent;
 class UDamageType;
 class UParticleSystem;
+class UAnimationAsset;
+
+USTRUCT()
+struct FWeaponData
+{
+	GENERATED_USTRUCT_BODY()
+
+	///** inifite ammo for reloads */
+	//UPROPERTY(EditDefaultsOnly, Category = Ammo)
+	//bool bInfiniteAmmo;
+
+	///** infinite ammo in clip, no reload required */
+	//UPROPERTY(EditDefaultsOnly, Category = Ammo)
+	//bool bInfiniteClip;
+
+	/** Clip size */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	int32 ClipSize;
+
+	/** Max ammo */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	int32 MaxAmmo;
+
+	/** Initial clips */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	int32 InitialClips;
+
+	/** Time between two consecutive shots */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float TimeBetweenShots;
+
+	///** Failsafe reload duration if weapon doesn't have any animation for it */
+	//UPROPERTY(EditDefaultsOnly, Category = WeaponStat)
+	//float NoAnimReloadDuration;
+
+	/** defaults */
+	FWeaponData()
+	{
+		/*bInfiniteAmmo = false;
+		bInfiniteClip = false;*/
+		ClipSize = 30;
+		MaxAmmo = 999;
+		InitialClips = 2;
+		TimeBetweenShots = 0.2f;
+		//NoAnimReloadDuration = 1.0f;
+	}
+};
 
 UCLASS()
 class BRGAME_API ASWeapon : public AActor
@@ -40,8 +87,14 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName TracerTargetName;
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName EjectionPortName;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	UParticleSystem* MuzzleFlashEffect;
+	UAnimationAsset* WeaponAnimation;
+
+	/*UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UParticleSystem* MuzzleFlashEffect;*/
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem* DefaultImpactEffect;
@@ -52,6 +105,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem* BulletTracerEffect;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UParticleSystem* ShellEjectionEffect;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UCameraShake> FireCameraShake;
 
@@ -59,7 +115,7 @@ protected:
 	float BaseDamage;
 	
 	// Traces the world from pawn eyes to crosshair location
-	void Fire();
+	virtual void Fire();
 
 	FTimerHandle TimerHandle_TimeBetweenShots;
 

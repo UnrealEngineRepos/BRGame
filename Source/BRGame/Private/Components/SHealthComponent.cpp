@@ -60,3 +60,17 @@ void USHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, 
 		}*/
 	}
 }
+
+void USHealthComponent::Heal(float HealAmount)
+{
+	if (HealAmount <= 0.f || Health <= 0.f)
+	{
+		return;
+	}
+
+	Health = FMath::Clamp(Health + HealAmount, 0.f, DefaultHealth);
+
+	UE_LOG(LogTemp, Log, TEXT("HP Changed: %s (+%s)"), *FString::SanitizeFloat(Health), *FString::SanitizeFloat(HealAmount));
+
+	OnHealthChanged.Broadcast(this, Health, -HealAmount, nullptr, nullptr, nullptr);
+}

@@ -10,6 +10,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
+#include "Animation/AnimationAsset.h"
 
 
 static int32 DebugWeaponDrawing = 0;
@@ -27,8 +28,9 @@ ASWeapon::ASWeapon()
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 	RootComponent = MeshComponent;
 
-	MuzzleSocketName = "MuzzleSocket";
+	MuzzleSocketName = "MuzzleFlash";
 	TracerTargetName = "BeamEnd";
+	EjectionPortName = "AmmoEject";
 
 	BaseDamage = 31.f;
 
@@ -46,7 +48,7 @@ void ASWeapon::Fire()
 {
 	AActor* MyOwner = GetOwner();
 	
-	if (MyOwner)
+	if (MyOwner != nullptr)
 	{
 		FVector EyeLocation;
 		FRotator EyeRotation;
@@ -72,7 +74,7 @@ void ASWeapon::Fire()
 		// Holds all of the data (what was hit, how far it was)
 		FHitResult Hit;
 		
-		if (GetWorld()->LineTraceSingleByChannel(Hit, EyeLocation, TraceEnd, COLLISION_WEAPON, QueryParams))
+		if (GetWorld()->LineTraceSingleByChannel(Hit, EyeLocation, TraceEnd, COLLISION_WEAPON, QueryParams) == true)
 		{
 			// Processes damage
 			AActor* HitActor = Hit.GetActor();
@@ -112,6 +114,8 @@ void ASWeapon::Fire()
 		
 		PlayWeaponShotFX(TracerEndPoint);
 
+
+
 		LastTimeFired = GetWorld()->TimeSeconds;
 
 		/*PlayFireEffects(TracerEndPoint);
@@ -141,20 +145,27 @@ void ASWeapon::StopFire()
 
 void ASWeapon::PlayWeaponShotFX(FVector TraceEnd)
 {
-	if (MuzzleFlashEffect != nullptr)
+	MeshComponent->PlayAnimation(WeaponAnimation, false);
+
+	/*if (MuzzleFlashEffect != nullptr)
 	{
 		UGameplayStatics::SpawnEmitterAttached(MuzzleFlashEffect, MeshComponent, MuzzleSocketName);
-	}
+	}*/
 
 	if (BulletTracerEffect != nullptr)
 	{
 		FVector MuzzleLocation = MeshComponent->GetSocketLocation(MuzzleSocketName);
 		UParticleSystemComponent* TracerComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BulletTracerEffect, MuzzleLocation);
 		
-		if (TracerComponent)
+		if (TracerComponent != nullptr)
 		{
 			TracerComponent->SetVectorParameter(TracerTargetName, TraceEnd);
 		}
+	}
+
+	if (ShellEjectionEffect != nullptr)
+	{
+		UGameplayStatics::SpawnEmitterAttached(ShellEjectionEffect, MeshComponent, EjectionPortName);
 	}
 
 	// Camera shake effect while firing
@@ -181,7 +192,7 @@ void ASWeapon::PlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint)
 	case SURFACE_FLESHVULNERABLE:
 		SelectedEffect = FleshImpactEffect;
 		break;
-	default:
+	default:	
 		SelectedEffect = DefaultImpactEffect;
 		break;
 	}
